@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'json'
+require_relative './lib/translate.rb'
 
 PAGE_ACCESS_TOKEN = ENV["PAGE_ACCESS_TOKEN"]
 VERIFY_TOKEN = ENV["VERIFY_TOKEN"]
@@ -28,7 +29,12 @@ post '/webhook/?' do
     user_id = msg["sender"]["id"]
     message = msg["message"]["text"]
 
-    send(user_id, message)
+    tx_req = TranslationRequest.parse(message)
+    if tx_req
+      send(user_id, Translator.new(tx_req).translate || "Translation failed")
+    else
+      send(user_id, "Could not translate \"#{message[0..9]}...\" Supported languages are en, es, fr. Example: \"en fr Where is the bathroom?\"")
+    end
   end
 
   200
