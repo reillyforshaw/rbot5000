@@ -17,6 +17,7 @@ module Google
       end
 
       def ==(tx_req)
+        return false if tx_req == nil
         source_language == tx_req.source_language && target_language == tx_req.target_language && text == tx_req.text
       end
 
