@@ -25,11 +25,8 @@ module Google
           curl -X GET "https://www.googleapis.com/language/translate/v2?key=#{GOOGLE_TRANSLATE_API_KEY}&source=#{source}&target=#{target}&q=#{text}"
         ]
         return nil unless tx_res
-        
-        json = JSON.parse(tx_res)
-        return nil unless json
 
-        json["data"]["translations"][0]["translatedText"]
+        JSON.parse(tx_res)["data"]["translations"][0]["translatedText"]
       end
 
       def self.supported_languages
