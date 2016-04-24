@@ -8,3 +8,5 @@ Example usage:
 ```
 en fr: give me all the cheese.
 ```
+
+The API requests are done inline with cURL. Sue me.
