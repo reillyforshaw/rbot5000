@@ -1,4 +1,4 @@
-require_relative '../lib/translate'
+require_relative '../lib/google/translate'
 
 class TestRun
   attr_accessor :successes, :failures
@@ -14,6 +14,19 @@ class TestRun
     else
       self.successes += 1
     end
+  end
+
+  def assert_error!(description, error_type)
+    begin
+      yield
+    rescue Exception => e
+      if e.class <= error_type
+        self.successes += 1
+        return
+      end
+    end
+
+    failures << "#{description} failed. Expected block to raise error of type #{error_type.name}, but it didn't."
   end
 
   def report
@@ -34,25 +47,20 @@ end
 
 t = TestRun.new
 
-tx_req = TranslationRequest.parse("en fr: The black cat")
-t.assert_equal!("Standard with colon", expected: TranslationRequest.new("en", "fr", "The black cat"), actual: tx_req)
+tx_req = Google::Translate::Request.parse("en fr: The black cat")
+t.assert_equal!("Standard with colon", expected: Google::Translate::Request.new("en", "fr", "The black cat"), actual: tx_req)
 
-tx_req = TranslationRequest.parse("en fr The black cat")
-t.assert_equal!("Standard without colon", expected: TranslationRequest.new("en", "fr", "The black cat"), actual: tx_req)
+tx_req = Google::Translate::Request.parse("en fr The black cat")
+t.assert_equal!("Standard without colon", expected: Google::Translate::Request.new("en", "fr", "The black cat"), actual: tx_req)
 
-tx_req = TranslationRequest.parse(" en  fr   :  The black cat  ")
-t.assert_equal!("Lots of spaces with colon", expected: TranslationRequest.new("en", "fr", "The black cat"), actual: tx_req)
+tx_req = Google::Translate::Request.parse(" en  fr   :  The black cat  ")
+t.assert_equal!("Lots of spaces with colon", expected: Google::Translate::Request.new("en", "fr", "The black cat"), actual: tx_req)
 
-tx_req = TranslationRequest.parse(" en  fr     The black cat  ")
-t.assert_equal!("Lots of spaces without colon", expected: TranslationRequest.new("en", "fr", "The black cat"), actual: tx_req)
+tx_req = Google::Translate::Request.parse(" en  fr     The black cat  ")
+t.assert_equal!("Lots of spaces without colon", expected: Google::Translate::Request.new("en", "fr", "The black cat"), actual: tx_req)
 
-tx_req = TranslationRequest.parse("en dog: The black cat")
-t.assert_equal!("Unsupported source language", expected: nil, actual: tx_req)
-
-tx_req = TranslationRequest.parse("dog fr: The black cat")
-t.assert_equal!("Unsupported target language", expected: nil, actual: tx_req)
-
-tx_req = TranslationRequest.parse("Garbage")
-t.assert_equal!("Total garbage", expected: nil, actual: tx_req)
+t.assert_error!("Total garbage", Google::Translate::ParseError) do
+  Google::Translate::Request.parse("Garbage")
+end
 
 t.report
