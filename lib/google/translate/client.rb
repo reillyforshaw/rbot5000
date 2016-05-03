@@ -24,9 +24,12 @@ module Google
         tx_res = %x[
           curl -X GET "https://www.googleapis.com/language/translate/v2?key=#{GOOGLE_TRANSLATE_API_KEY}&source=#{source}&target=#{target}&q=#{text}"
         ]
-        return nil unless tx_res
 
-        JSON.parse(tx_res)["data"]["translations"][0]["translatedText"]
+        begin
+          JSON.parse(tx_res)["data"]["translations"][0]["translatedText"]
+        rescue StandardError
+          raise TranslationRequestFailedError.new
+        end
       end
 
       def self.supported_languages
@@ -40,5 +43,6 @@ module Google
 
     class UnsupportedSourceLanguageError < Error; def initialize(l); super("Unsupported source language \"#{l}\". Valid languages are #{Client.supported_languages}."); end; end
     class UnsupportedTargetLanguageError < Error; def initialize(l); super("Unsupported target language \"#{l}\". Valid languages are #{Client.supported_languages}."); end; end
+    class TranslationRequestFailedError < Error; def initialize; super("Translation failed."); end; end
   end
 end

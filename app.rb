@@ -23,7 +23,7 @@ post '/webhook/?' do
   Facebook::Messenger::Message.parse(params).each do |msg|
     begin
       tx_req = Google::Translate::Request.parse(msg.text)
-      reply = msg.build_reply(Google::Translate::Client.new(tx_req).translate || "Translation failed.")
+      reply = msg.build_reply(Google::Translate::Client.new(tx_req).translate)
     rescue Google::Translate::Error => e
       reply = msg.build_reply(e.message)
     end
